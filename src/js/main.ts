@@ -27,6 +27,7 @@ class App {
       this.createWebGLTexts();
       this.createPostProcessing();
       this.addEventListeners();
+      this.setupMobileMenu();
 
       this.update();
     });
@@ -86,6 +87,43 @@ class App {
 
   private addEventListeners() {
     window.addEventListener("resize", this.onResize.bind(this));
+  }
+
+  private setupMobileMenu() {
+    const frame = document.querySelector<HTMLElement>(".frame");
+    const toggle = document.querySelector<HTMLButtonElement>(".frame__menu-toggle");
+    const links = document.querySelector<HTMLElement>(".frame__links");
+    if (!frame || !toggle || !links) return;
+
+    const isOpen = () => frame.classList.contains("frame--menu-open");
+
+    const setOpen = (open: boolean) => {
+      frame.classList.toggle("frame--menu-open", open);
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      if (open) {
+        this.commons.lenis.stop();
+      } else {
+        this.commons.lenis.start();
+      }
+    };
+
+    toggle.addEventListener("click", () => setOpen(!isOpen()));
+
+    links.addEventListener("click", (event) => {
+      if ((event.target as HTMLElement).closest("a")) setOpen(false);
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && isOpen()) {
+        setOpen(false);
+        toggle.focus();
+      }
+    });
+
+    window.matchMedia("(min-width: 53em)").addEventListener("change", (event) => {
+      if (event.matches && isOpen()) setOpen(false);
+    });
   }
 }
 
